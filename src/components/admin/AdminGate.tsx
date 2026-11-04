@@ -16,12 +16,14 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [checkError, setCheckError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function check(s: Session | null) {
     setSession(s);
     if (!s || s.user.is_anonymous) { setState("out"); return; }
-    const { data } = await db.rpc("is_admin");
+    const { data, error } = await db.rpc("is_admin");
+    setCheckError(error ? `${error.code ?? ""} ${error.message}`.trim() : null);
     setState(data ? "in" : "denied");
   }
   useEffect(() => {
@@ -49,7 +51,11 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3"><BrandMark className="h-10 w-10" /><div><p className="eyebrow">Afrikadag</p><h1 className="text-lg font-extrabold">Facilitator sign-in</h1></div></div>
           {state === "denied" ? (
             <div className="mt-5 space-y-3">
-              <p className="rounded-xl bg-caution-soft px-3 py-2.5 text-sm text-caution">Signed in as {session?.user.email}, but this account is not a facilitator.</p>
+              {checkError ? (
+                <p className="rounded-xl bg-stop-soft px-3 py-2.5 text-sm text-stop">Signed in as {session?.user.email}, but the facilitator check failed: <span className="font-mono">{checkError}</span>. The database setup may be incomplete.</p>
+              ) : (
+                <p className="rounded-xl bg-caution-soft px-3 py-2.5 text-sm text-caution">Signed in as {session?.user.email}, but this account is not a facilitator yet. Add it with <span className="font-mono">select public.grant_admin('{session?.user.email}');</span> in the Supabase SQL editor, then sign out and in again.</p>
+              )}
               <button className="btn-secondary w-full" onClick={signOut}><LogOut className="h-4 w-4" /> Sign out</button>
             </div>
           ) : (
