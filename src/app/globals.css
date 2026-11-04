@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-display-face), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0b1f3a;          /* headings, nav */
+  --color-ink-2: #34465e;        /* body text */
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-surface: #f4f6fa;
+  --color-card: #ffffff;
+
+  --color-brand: #0b5cad;        /* primary actions */
+  --color-brand-dark: #08457f;
+  --color-brand-soft: #e7f0fb;
+  --color-accent: #12a3c4;
+
+  /* traffic light — used consistently across the platform */
+  --color-go: #15803d;
+  --color-go-soft: #e8f6ec;
+  --color-caution: #b45309;
+  --color-caution-fill: #f59e0b;
+  --color-caution-soft: #fdf3e2;
+  --color-stop: #b91c1c;
+  --color-stop-soft: #fcebeb;
+
+  --animate-rise: rise .35s cubic-bezier(.2,.8,.2,1) both;
+  --animate-pop: pop .45s cubic-bezier(.2,.8,.2,1) both;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { opacity: 0; transform: scale(.96) translateY(-6px); } 100% { opacity: 1; transform: none; } }
+@keyframes pulse-soft { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--color-surface);
+    color: var(--color-ink-2);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 { color: var(--color-ink); font-family: var(--font-display); letter-spacing: -0.01em; }
+}
+
+@utility card { @apply rounded-2xl border border-line bg-card shadow-[0_1px_2px_rgba(11,31,58,.04),0_4px_16px_-8px_rgba(11,31,58,.08)]; }
+@utility btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[.98] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand; }
+@utility btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark; }
+@utility btn-secondary { @apply btn border border-line bg-white text-ink hover:bg-surface; }
+@utility btn-ghost { @apply btn text-ink-2 hover:bg-surface; }
+@utility btn-danger { @apply btn bg-stop text-white hover:brightness-110; }
+@utility input { @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink placeholder:text-slate-400 transition focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15 disabled:bg-surface disabled:text-muted; }
+@utility label { @apply mb-1.5 block text-sm font-semibold text-ink; }
+@utility eyebrow { @apply text-[11px] font-bold uppercase tracking-[.12em] text-muted; }
+@utility chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold; }
+
+/* Hide scrollbars on the horizontal progress tracker */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
