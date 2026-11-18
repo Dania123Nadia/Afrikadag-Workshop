@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Eye, Loader2, Lock, MessageSquareQuote, Send, Sparkles } from "lucide-react";
+import { CheckCircle2, Eye, Loader2, Lock, Send, Sparkles } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ITEM_META, LEVEL_LABEL } from "@/lib/content";
+import { ITEM_META } from "@/lib/content";
 import { friendlyError } from "@/lib/supabase";
 import { serverNow, timeAgo } from "@/lib/time";
 import type { ParticipantState } from "@/lib/useParticipantWorkshop";
 import type { ItemKind, ResponseItem } from "@/lib/types";
 import { ItemBoard } from "./ItemBoard";
-import { ReflectionBox } from "./Reflection";
 import { SharedText } from "./SharedText";
 import { useToast } from "@/components/ui/Toast";
 
@@ -32,7 +31,7 @@ export function Workspace({ db, data, setItems, focusSubmit, markActive }: {
   setItems: (fn: (items: ResponseItem[]) => ResponseItem[]) => void; markActive: () => void;
 }) {
   const toast = useToast();
-  const { workshop, me, questions, fields, items, reflections, progress } = data;
+  const { workshop, me, fields, items, progress } = data;
   const locked = workshop.submissions_locked || workshop.status === "ended" || workshop.status === "draft";
   // "Someone else is editing" is derived from the latest saved version of a field,
   // so it costs no extra realtime messages.
@@ -49,7 +48,6 @@ export function Workspace({ db, data, setItems, focusSubmit, markActive }: {
   const onErr = (m: string) => toast(m, undefined, "warn");
 
   async function submit() {
-    if (!fields.key_takeaway?.content.trim() && takeawayState === "saved") { toast("Key takeaway missing", friendlyError("KEY_TAKEAWAY_REQUIRED"), "warn"); return; }
     setSubmitting(true);
     // give a pending autosave a moment to land
     await new Promise((r) => setTimeout(r, takeawayState === "saved" ? 0 : 1200));
@@ -63,7 +61,7 @@ export function Workspace({ db, data, setItems, focusSubmit, markActive }: {
   const kinds: ItemKind[] = ["opportunity", "risk", "recommendation"];
 
   const takeaway = (
-    <Section n={7} title="Key takeaway" required accent="var(--color-accent)" hint="What is the most important insight your group wants to share with the room?">
+    <Section n={5} title="Key takeaway" accent="var(--color-accent)" hint="What is the most important insight your group wants to share with the room?">
       <SharedText db={db} groupId={me.group_id} field="key_takeaway" remote={fields.key_takeaway} disabled={locked} rows={3} maxLength={600}
         placeholder="In one or two sentences…" typingCount={othersEditing("key_takeaway")} onTyping={onTyping} onState={setTakeawayState} id="takeaway" />
     </Section>
@@ -102,29 +100,12 @@ export function Workspace({ db, data, setItems, focusSubmit, markActive }: {
   return (
     <div className="space-y-3">
       {focusSubmit && (<>{takeaway}{submitPanel}<p className="eyebrow pt-3">Review your group's work</p></>)}
-      <Section n={1} title="Your first reaction" hint="A quick personal reaction to the proposal, before you discuss.">
-        <ReflectionBox db={db} workshopId={workshop.id} meId={me.id} reflections={reflections} disabled={locked} onTyping={markActive} />
-      </Section>
-      <Section n={2} title="Guiding questions" hint="Use these to structure your discussion. You don't need to answer them one by one.">
-        <ol className="space-y-2">
-          {questions.map((q, i) => (
-            <li key={q.id} className="flex gap-3 rounded-xl bg-surface p-3">
-              <MessageSquareQuote className="mt-0.5 h-4.5 w-4.5 shrink-0 text-brand" />
-              <div>
-                <p className="text-[15px] font-medium text-ink">{q.text}</p>
-                <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted">Q{i + 1} · {LEVEL_LABEL[q.level]}</p>
-              </div>
-            </li>
-          ))}
-          {questions.length === 0 && <li className="text-sm text-muted">No questions for this group.</li>}
-        </ol>
-      </Section>
-      <Section n={3} title="Group discussion notes" hint="One shared notepad for your table. Several people can type at once.">
+      <Section n={1} title="Group discussion notes" hint="One shared notepad for your table. Several people can type at once.">
         <SharedText db={db} groupId={me.group_id} field="notes" remote={fields.notes} disabled={locked} rows={7}
           placeholder="Key points from your discussion…" typingCount={othersEditing("notes")} onTyping={onTyping} />
       </Section>
       {kinds.map((k, i) => (
-        <Section key={k} n={4 + i} title={ITEM_META[k].label} hint={ITEM_META[k].prompt} accent={ITEM_META[k].color}>
+        <Section key={k} n={2 + i} title={ITEM_META[k].label} hint={ITEM_META[k].prompt} accent={ITEM_META[k].color}>
           <ItemBoard db={db} kind={k} items={items} groupId={me.group_id} meId={me.id} disabled={locked} onChange={setItems} onError={onErr} />
         </Section>
       ))}

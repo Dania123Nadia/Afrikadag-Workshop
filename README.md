@@ -25,7 +25,7 @@ the session from a password-protected dashboard and see all input live.
 1. Introduction (10 min) · 2. Understanding the proposal (10) · 3. Stakeholder assignment (5) · 4. Group discussion (20) · 5. Submit your insights (5) · 6. Presentations and reflection (15)
 
 ### Group workspace
-1. First reaction (individual, visible to the group) · 2. Guiding questions · 3. Shared discussion notes · 4. Opportunities · 5. Risks & challenges · 6. Recommendations · 7. Key takeaway (required) · Submit.
+1. Shared discussion notes · 2. Opportunities · 3. Risks & challenges · 4. Recommendations · 5. Key takeaway (optional) · Submit. The guiding questions sit in the "Proposal, role & questions" booklet.
 
 Stakeholder profiles are clearly marked as **illustrative** and do not attribute positions to real organisations.
 

@@ -11,6 +11,7 @@ import { TimerBadge } from "@/components/ui/TimerBadge";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 import { Drawer } from "@/components/ui/Drawer";
 import { Workspace } from "@/components/participant/Workspace";
+import { GuidingQuestions } from "@/components/participant/GuidingQuestions";
 import { contentOf } from "@/lib/content";
 import { useParticipantWorkshop } from "@/lib/useParticipantWorkshop";
 import type { ResponseItem } from "@/lib/types";
@@ -26,7 +27,7 @@ function ParticipantApp({ code }: { code: string }) {
   const toast = useToast();
   const { db, status, data, setData, connected, groupOnline, markActive, error } = useParticipantWorkshop(code);
   const [refOpen, setRefOpen] = useState(false);
-  const [refTab, setRefTab] = useState<"proposal" | "role">("role");
+  const [refTab, setRefTab] = useState<"proposal" | "role" | "questions">("role");
   const [dismissed, setDismissed] = useState<string | null>(null);
   const prevStage = useRef<number | null>(null);
   const prevStatus = useRef<string | null>(null);
@@ -163,7 +164,7 @@ function ParticipantApp({ code }: { code: string }) {
                 <StakeholderCard group={group} reveal />
                 <section className="card p-5">
                   <p className="eyebrow">Warm-up at your table</p>
-                  <p className="mt-1 text-[15px]">Take a minute to agree: <strong>as {group.name}, what is your first reaction to the proposal?</strong> In the next step you'll write it down.</p>
+                  <p className="mt-1 text-[15px]">Take a minute to agree: <strong>as {group.name}, what is your first reaction to the proposal?</strong></p>
                 </section>
               </div>
             )}
@@ -215,19 +216,21 @@ function ParticipantApp({ code }: { code: string }) {
       {started && w.status !== "ended" && (
         <button onClick={() => { setRefTab(roleVisible ? "role" : "proposal"); setRefOpen(true); }}
           className="fixed bottom-5 right-4 z-30 flex items-center gap-2 rounded-full bg-ink px-4 py-3 text-sm font-semibold text-white shadow-xl transition hover:bg-ink-2">
-          <BookOpen className="h-4 w-4" /> Proposal & role
+          <BookOpen className="h-4 w-4" /> Proposal, role & questions
         </button>
       )}
       <Drawer open={refOpen} onClose={() => setRefOpen(false)} title={
         <div className="flex gap-1 rounded-xl bg-surface p-1">
-          {(["role", "proposal"] as const).map((t) => (
-            <button key={t} onClick={() => setRefTab(t)} disabled={t === "role" && !roleVisible} className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-40 ${refTab === t ? "bg-white text-ink shadow-sm" : "text-muted"}`}>
-              {t === "role" ? "My role" : "The proposal"}
+          {(["role", "proposal", "questions"] as const).map((t) => (
+            <button key={t} onClick={() => setRefTab(t)} disabled={t !== "proposal" && !roleVisible} className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-40 ${refTab === t ? "bg-white text-ink shadow-sm" : "text-muted"}`}>
+              {t === "role" ? "My role" : t === "proposal" ? "The proposal" : "Questions"}
             </button>
           ))}
         </div>
       }>
-        {refTab === "role" && group && roleVisible ? <StakeholderCard group={group} /> : <ProposalOverview content={w.content} />}
+        {refTab === "role" && group && roleVisible ? <StakeholderCard group={group} />
+          : refTab === "questions" && roleVisible ? <GuidingQuestions questions={data.questions} />
+          : <ProposalOverview content={w.content} />}
       </Drawer>
     </div>
   );
