@@ -48,7 +48,6 @@ export function Workspace({ db, data, setItems, focusSubmit, markActive }: {
   const onErr = (m: string) => toast(m, undefined, "warn");
 
   async function submit() {
-    if (!fields.key_takeaway?.content.trim() && takeawayState === "saved") { toast("Key takeaway missing", friendlyError("KEY_TAKEAWAY_REQUIRED"), "warn"); return; }
     setSubmitting(true);
     // give a pending autosave a moment to land
     await new Promise((r) => setTimeout(r, takeawayState === "saved" ? 0 : 1200));
@@ -62,7 +61,7 @@ export function Workspace({ db, data, setItems, focusSubmit, markActive }: {
   const kinds: ItemKind[] = ["opportunity", "risk", "recommendation"];
 
   const takeaway = (
-    <Section n={5} title="Key takeaway" required accent="var(--color-accent)" hint="What is the most important insight your group wants to share with the room?">
+    <Section n={5} title="Key takeaway" accent="var(--color-accent)" hint="What is the most important insight your group wants to share with the room?">
       <SharedText db={db} groupId={me.group_id} field="key_takeaway" remote={fields.key_takeaway} disabled={locked} rows={3} maxLength={600}
         placeholder="In one or two sentences…" typingCount={othersEditing("key_takeaway")} onTyping={onTyping} onState={setTakeawayState} id="takeaway" />
     </Section>

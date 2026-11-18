@@ -121,12 +121,23 @@ function Tables() {
 }
 
 function GroupEditor({ group }: { group: StakeholderGroup }) {
-  const { db, questions, assignments } = useWs();
+  const { db, questions, assignments, setState } = useWs();
   const { busy, run } = useSaver();
   const toast = useToast();
   const [v, setV] = useState(group);
   useEffect(() => setV(group), [group]);
   const qs = questions.filter((q) => q.group_id === group.id);
+  const [adding, setAdding] = useState(false);
+  // Add the new row to the screen straight away instead of waiting for realtime,
+  // and say so when the database refuses it.
+  const addQuestion = async () => {
+    setAdding(true);
+    const position = qs.reduce((m, q) => Math.max(m, q.position + 1), 0);
+    const { data, error } = await db.from("guiding_questions").insert({ group_id: group.id, position, text: "New question", level: "core" }).select().single();
+    setAdding(false);
+    if (error) return toast("Could not add question", error.message, "warn");
+    setState((s) => (s.questions.some((q) => q.id === data.id) ? s : { ...s, questions: [...s.questions, data as Question] }));
+  };
   const save = () => run(() => db.from("stakeholder_groups").update({ name: v.name, color: v.color, icon: v.icon, who: v.who, interests: v.interests, concerns: v.concerns, illustrative: v.illustrative }).eq("id", group.id));
   const del = async () => {
     if (assignments.some((a) => a.group_id === group.id)) { toast("Group still has tables", "Move its tables to another group first.", "warn"); return; }
@@ -159,7 +170,8 @@ function GroupEditor({ group }: { group: StakeholderGroup }) {
         <div className="border-t border-line pt-3">
           <p className="label">Guiding questions</p>
           <div className="space-y-2">{qs.map((q) => <QuestionRow key={q.id} q={q} />)}</div>
-          <button className="btn-secondary mt-2" onClick={() => db.from("guiding_questions").insert({ group_id: group.id, position: qs.length, text: "New question", level: "core" })}><Plus className="h-4 w-4" />Add question</button>
+          {qs.length === 0 && <p className="text-sm text-muted">No questions yet.</p>}
+          <button className="btn-secondary mt-2" disabled={adding} onClick={addQuestion}>{adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}Add question</button>
         </div>
       </div>
     </details>
@@ -167,7 +179,18 @@ function GroupEditor({ group }: { group: StakeholderGroup }) {
 }
 
 function QuestionRow({ q }: { q: Question }) {
-  const { db } = useWs();
+  const { db, setState } = useWs();
+  const toast = useToast();
+  const saveQ = async () => {
+    const { error } = await db.from("guiding_questions").update({ text, level }).eq("id", q.id);
+    if (error) return toast("Could not save question", error.message, "warn");
+    setState((s) => ({ ...s, questions: s.questions.map((x) => (x.id === q.id ? { ...x, text, level } : x)) }));
+  };
+  const delQ = async () => {
+    const { error } = await db.from("guiding_questions").delete().eq("id", q.id);
+    if (error) return toast("Could not delete question", error.message, "warn");
+    setState((s) => ({ ...s, questions: s.questions.filter((x) => x.id !== q.id) }));
+  };
   const [text, setText] = useState(q.text);
   const [level, setLevel] = useState(q.level);
   useEffect(() => { setText(q.text); setLevel(q.level); }, [q]);
@@ -178,8 +201,8 @@ function QuestionRow({ q }: { q: Question }) {
       <select className="input !w-32 !py-2 text-sm" value={level} onChange={(e) => setLevel(e.target.value as Question["level"])}>
         <option value="core">Starter</option><option value="deeper">Deeper</option><option value="challenge">Challenge</option>
       </select>
-      <button className="btn-primary !px-3" disabled={!dirty} onClick={() => db.from("guiding_questions").update({ text, level }).eq("id", q.id)} aria-label="Save question"><Save className="h-4 w-4" /></button>
-      <button className="btn-ghost !px-2 text-muted hover:text-stop" onClick={() => db.from("guiding_questions").delete().eq("id", q.id)} aria-label="Delete question"><Trash2 className="h-4 w-4" /></button>
+      <button className="btn-primary !px-3" disabled={!dirty} onClick={saveQ} aria-label="Save question"><Save className="h-4 w-4" /></button>
+      <button className="btn-ghost !px-2 text-muted hover:text-stop" onClick={delQ} aria-label="Delete question"><Trash2 className="h-4 w-4" /></button>
     </div>
   );
 }
