@@ -165,7 +165,13 @@ function ParticipantApp({ code }: { code: string }) {
                   <p className="eyebrow mb-3">The proposal in one look</p>
                   <div className="grid gap-2 sm:grid-cols-3">
                     {[["A", "Circular migration", "Work in NL for a period, return, possibly again."], ["B", "Traffic light system", "Only facilitate where both countries benefit."], ["C", "Co-training", "Select and train candidates together."]].map(([l, t, d]) => (
-                      <div key={l} className="rounded-xl bg-surface p-3"><span className="text-xs font-bold text-brand">{l}</span><p className="font-bold text-ink">{t}</p><p className="text-sm text-muted">{d}</p></div>
+                      <div key={l} className="flex h-full flex-col rounded-xl bg-surface p-3.5">
+                        <div className="flex items-center gap-2.5">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-soft text-xs font-bold text-brand">{l}</span>
+                          <p className="font-bold leading-snug text-ink">{t}</p>
+                        </div>
+                        <p className="mt-1.5 text-sm leading-relaxed text-muted">{d}</p>
+                      </div>
                     ))}
                   </div>
                   <div className="mt-4"><TrafficLight content={w.content} /></div>
@@ -238,8 +244,8 @@ function ParticipantApp({ code }: { code: string }) {
       <Drawer open={refOpen} onClose={() => setRefOpen(false)} title={
         <div className="flex gap-1 rounded-xl bg-surface p-1">
           {(["role", "proposal", "questions"] as const).map((t) => (
-            <button key={t} onClick={() => setRefTab(t)} disabled={t !== "proposal" && !roleVisible} className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-40 ${refTab === t ? "bg-white text-ink shadow-sm" : "text-muted"}`}>
-              {t === "role" ? "My role" : t === "proposal" ? "The proposal" : "Questions"}
+            <button key={t} onClick={() => setRefTab(t)} disabled={t !== "proposal" && !roleVisible} className={`flex-1 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-semibold disabled:opacity-40 ${refTab === t ? "bg-white text-ink shadow-sm" : "text-muted"}`}>
+              {t === "role" ? "My role" : t === "proposal" ? "Proposal" : "Questions"}
             </button>
           ))}
         </div>

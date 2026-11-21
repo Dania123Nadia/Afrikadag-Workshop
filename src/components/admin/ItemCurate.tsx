@@ -21,7 +21,7 @@ export function ItemCurate({ item, groupName, showKind = false, onChange }: { it
   return (
     <div className="rounded-xl border-l-4 bg-white px-3 py-2 ring-1 ring-line" style={{ borderLeftColor: meta.color }}>
       <div className="flex items-start gap-2">
-        <p className="flex-1 whitespace-pre-wrap text-sm text-ink">{item.text}</p>
+        <p className="user-text min-w-0 flex-1 whitespace-pre-wrap text-sm leading-relaxed text-ink">{item.text}</p>
         <button onClick={() => update({ featured: !item.featured })} title={item.featured ? "Shown in presentation" : "Show in presentation"}
           className={`rounded-lg p-1 transition ${item.featured ? "text-caution-fill" : "text-slate-300 hover:text-caution-fill"}`} aria-pressed={item.featured}>
           <Star className="h-4 w-4" fill={item.featured ? "currentColor" : "none"} />

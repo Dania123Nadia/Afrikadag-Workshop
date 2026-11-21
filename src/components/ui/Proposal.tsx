@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ArrowRight, ChevronDown, GraduationCap, RefreshCcw, TrafficCone } from "lucide-react";
+import { ChevronDown, Plus, GraduationCap, RefreshCcw, TrafficCone } from "lucide-react";
 import { COTRAINING_STEPS, TRAFFIC, contentOf } from "@/lib/content";
 import type { WorkshopContent } from "@/lib/types";
 
@@ -11,14 +11,16 @@ export function TrafficLight({ content, compact = false }: { content?: WorkshopC
   return (
     <div className={`grid gap-2.5 ${compact ? "" : "sm:grid-cols-3"}`}>
       {TRAFFIC.map((t, i) => (
-        <div key={t.key} className="animate-rise rounded-2xl border p-4" style={{ background: t.soft, borderColor: `color-mix(in srgb, ${t.color} 25%, transparent)`, animationDelay: `${i * 80}ms` }}>
+        <div key={t.key} className="animate-rise flex flex-col rounded-2xl border p-4 sm:p-5" style={{ background: t.soft, borderColor: `color-mix(in srgb, ${t.color} 25%, transparent)`, animationDelay: `${i * 80}ms` }}>
+          {/* Colour label on its own line, then the verdict as a heading, then the explanation:
+              the same three rows in every card, so the cards line up side by side */}
           <div className="flex items-center gap-2.5">
-            <span className="h-4 w-4 rounded-full ring-4" style={{ background: t.key === "amber" ? "var(--color-caution-fill)" : t.color, ["--tw-ring-color" as string]: `color-mix(in srgb, ${t.color} 22%, transparent)` }} />
-            <span className="text-sm font-bold uppercase tracking-wide" style={{ color: t.color }}>{t.label}</span>
-            <span className="text-sm font-semibold text-ink">· {t.title}</span>
+            <span className="h-3.5 w-3.5 shrink-0 rounded-full ring-4" style={{ background: t.key === "amber" ? "var(--color-caution-fill)" : t.color, ["--tw-ring-color" as string]: `color-mix(in srgb, ${t.color} 22%, transparent)` }} />
+            <span className="whitespace-nowrap text-xs font-bold uppercase tracking-[.12em]" style={{ color: t.color }}>{t.label}</span>
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-ink-2">{t.text}</p>
-          {examples[t.key] && <p className="mt-2 text-xs text-muted"><span className="font-semibold">Examples: </span>{examples[t.key]}</p>}
+          <h4 className="mt-2.5 font-display text-base font-bold leading-snug text-ink">{t.title}</h4>
+          <p className="mt-1.5 text-sm leading-relaxed text-ink-2">{t.text}</p>
+          {examples[t.key] && <p className="mt-3 border-t border-black/5 pt-2.5 text-xs leading-relaxed text-muted"><span className="font-semibold text-ink-2">Examples: </span>{examples[t.key]}</p>}
         </div>
       ))}
     </div>
@@ -57,14 +59,16 @@ export function ProposalOverview({ content, defaultOpen }: { content?: WorkshopC
   const [open, setOpen] = useState<string | null>(defaultOpen ?? "circular");
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">
-        {PARTS.map((p, i) => (
-          <span key={p.key} className="flex items-center gap-2">
-            <span className="rounded-full bg-white px-2.5 py-1 text-ink ring-1 ring-line">{p.letter} · {p.title}</span>
-            {i < PARTS.length - 1 && <ArrowRight className="h-3.5 w-3.5" />}
-          </span>
-        ))}
-        <span className="text-muted">= one integrated proposal</span>
+      <div>
+        <p className="eyebrow mb-2">One integrated proposal</p>
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2 text-xs font-semibold text-muted">
+          {PARTS.map((p, i) => (
+            <span key={p.key} className="flex items-center gap-1.5">
+              <span className="whitespace-nowrap rounded-full bg-white px-2.5 py-1 text-ink ring-1 ring-line">{p.letter} · {p.title}</span>
+              {i < PARTS.length - 1 && <Plus className="h-3 w-3 shrink-0" aria-label="plus" />}
+            </span>
+          ))}
+        </div>
       </div>
       {PARTS.map((p) => {
         const I = p.icon;
@@ -82,14 +86,14 @@ export function ProposalOverview({ content, defaultOpen }: { content?: WorkshopC
             </button>
             {isOpen && (
               <div className="animate-rise space-y-4 border-t border-line px-4 pb-5 pt-4">
-                <p className="text-[15px] leading-relaxed">{c[p.key]}</p>
+                <p className="max-w-prose text-[15px] leading-relaxed">{c[p.key]}</p>
                 {p.key === "circular" && <CircularDiagram />}
                 {p.key === "traffic" && <TrafficLight content={content} />}
                 {p.key === "cotraining" && (
                   <ol className="grid gap-2 sm:grid-cols-2">
                     {COTRAINING_STEPS.map((s, i) => (
-                      <li key={s} className="flex items-center gap-3 rounded-xl bg-surface px-3 py-2.5 text-sm text-ink">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">{i + 1}</span>{s}
+                      <li key={s} className="flex items-start gap-3 rounded-xl bg-surface px-3.5 py-3 text-sm leading-snug text-ink">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">{i + 1}</span><span className="pt-[3px]">{s}</span>
                       </li>
                     ))}
                   </ol>

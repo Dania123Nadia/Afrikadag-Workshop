@@ -57,7 +57,7 @@ export function ItemBoard({ db, kind, items, groupId, meId, disabled, onChange, 
               </div>
             ) : (
               <div className="flex items-start gap-2">
-                <p className="flex-1 whitespace-pre-wrap text-[15px] text-ink">{it.text}</p>
+                <p className="user-text min-w-0 flex-1 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{it.text}</p>
                 {!disabled && (
                   <div className="flex shrink-0 gap-0.5 opacity-60 transition group-hover:opacity-100">
                     <button className="rounded-lg p-1.5 text-muted hover:bg-surface hover:text-ink" onClick={() => { setEditing(it.id); setEditText(it.text); }} aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></button>
