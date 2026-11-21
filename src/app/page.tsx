@@ -64,12 +64,26 @@ function JoinInner() {
     if (!table) { setErr("Please choose your table."); return; }
     setBusy(true); setErr(null);
     try {
-      const { data: s } = await db.auth.getSession();
-      if (!s.session) {
+      // Start a new anonymous login. Also used when this browser still holds a login
+      // whose user was deleted (e.g. after "Delete participant data"): that old
+      // login looks valid locally but the database no longer knows the user.
+      const freshLogin = async () => {
+        await db.auth.signOut({ scope: "local" }).catch(() => {});
         const { error } = await db.auth.signInAnonymously();
         if (error) throw error;
+      };
+      const { data: s } = await db.auth.getSession();
+      if (!s.session) await freshLogin();
+      else {
+        const { error: ue } = await db.auth.getUser();
+        if (ue && (ue.status ?? 0) >= 400 && (ue.status ?? 0) < 500) await freshLogin();
       }
-      const { error } = await db.rpc("join_workshop", { p_code: code, p_table: table, p_name: name || null });
+      const joinRpc = () => db.rpc("join_workshop", { p_code: code, p_table: table, p_name: name || null });
+      let { error } = await joinRpc();
+      if (error && (error.code === "23503" || /user_id_fkey|NOT_SIGNED_IN/.test(error.message))) {
+        await freshLogin();
+        ({ error } = await joinRpc());
+      }
       if (error) throw error;
       router.push(`/w/${code.toUpperCase()}`);
     } catch (e) {
