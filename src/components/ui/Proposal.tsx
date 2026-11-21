@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ChevronDown, Plus, GraduationCap, RefreshCcw, TrafficCone } from "lucide-react";
-import { COTRAINING_STEPS, TRAFFIC, contentOf } from "@/lib/content";
+import { TRAFFIC, contentOf } from "@/lib/content";
 import type { WorkshopContent } from "@/lib/types";
 
 /** Visual traffic light explainer */
@@ -89,15 +89,6 @@ export function ProposalOverview({ content, defaultOpen }: { content?: WorkshopC
                 <p className="max-w-prose text-[15px] leading-relaxed">{c[p.key]}</p>
                 {p.key === "circular" && <CircularDiagram />}
                 {p.key === "traffic" && <TrafficLight content={content} />}
-                {p.key === "cotraining" && (
-                  <ol className="grid gap-2 sm:grid-cols-2">
-                    {COTRAINING_STEPS.map((s, i) => (
-                      <li key={s} className="flex items-start gap-3 rounded-xl bg-surface px-3.5 py-3 text-sm leading-snug text-ink">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">{i + 1}</span><span className="pt-[3px]">{s}</span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
               </div>
             )}
           </section>
