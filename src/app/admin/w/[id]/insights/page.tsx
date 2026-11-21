@@ -32,7 +32,7 @@ export default function Insights() {
         {list.map((t) => (
           <li key={t.term}>
             <button className="group w-full text-left" onClick={() => setDetail({ title: `“${t.term}” in ${ITEM_META[kind].label.toLowerCase()}`, items: t.items })}>
-              <div className="flex items-baseline justify-between gap-2 text-sm"><span className="font-semibold text-ink group-hover:underline">{t.term}</span><span className="text-xs tabular-nums text-muted">{t.items.length}× · {t.groups.size} group{t.groups.size > 1 ? "s" : ""}</span></div>
+              <div className="flex items-baseline justify-between gap-2 text-sm"><span className="user-text min-w-0 font-semibold text-ink group-hover:underline">{t.term}</span><span className="shrink-0 whitespace-nowrap text-xs tabular-nums text-muted">{t.items.length}× · {t.groups.size} group{t.groups.size > 1 ? "s" : ""}</span></div>
               <div className="mt-1 h-1.5 rounded-full bg-surface"><div className="h-full rounded-full transition-all" style={{ width: `${(t.items.length / max) * 100}%`, background: ITEM_META[kind].color }} /></div>
             </button>
           </li>

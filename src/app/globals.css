@@ -41,8 +41,10 @@
     color: var(--color-ink-2);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    /* Long words, links and names wrap inside their box instead of sticking out */
-    overflow-wrap: anywhere;
+    /* Very long words and links wrap instead of sticking out. (break-word, not
+       anywhere: "anywhere" lets flex/grid items shrink below one word and then
+       splits ordinary words like "AMB|ER".) */
+    overflow-wrap: break-word;
   }
   h1, h2, h3, h4 { color: var(--color-ink); font-family: var(--font-display); letter-spacing: -0.01em; }
 }
@@ -57,6 +59,10 @@
 @utility label { @apply mb-1.5 block text-sm font-semibold text-ink; }
 @utility eyebrow { @apply text-[11px] font-bold uppercase tracking-[.12em] text-muted; }
 @utility chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold; }
+
+/* For text people type (ideas, notes, names): lets a long link or unbroken word wrap
+   even inside a tight flex row. Never use on labels or headings. */
+@utility user-text { overflow-wrap: anywhere; }
 
 /* Hide scrollbars on the horizontal progress tracker */
 .no-scrollbar::-webkit-scrollbar { display: none; }

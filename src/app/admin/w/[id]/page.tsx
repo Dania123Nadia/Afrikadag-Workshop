@@ -102,8 +102,11 @@ export default function Dashboard() {
                   <div className="mt-3 grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
                     {([["opportunity", s.opp], ["risk", s.risk], ["recommendation", s.rec]] as const).map(([k, list]) => (
                       <div key={k} className="min-w-0 rounded-lg px-2 py-1.5" style={{ background: ITEM_META[k].soft }}>
-                        <p className="text-[10px] font-bold uppercase tracking-wide [overflow-wrap:normal]" style={{ color: ITEM_META[k].color }}>{ITEM_META[k].label.split(" ")[0]} · {list.length}</p>
-                        <p className="mt-0.5 line-clamp-2 text-xs text-ink">{list[list.length - 1]?.text ?? "–"}</p>
+                        <p className="flex items-baseline justify-between gap-1.5 text-[10px] font-bold uppercase tracking-wide" style={{ color: ITEM_META[k].color }}>
+                          <span className="whitespace-nowrap">{ITEM_META[k].label.split(" ")[0]}</span>
+                          <span className="shrink-0 tabular-nums">{list.length}</span>
+                        </p>
+                        <p className="user-text mt-1 line-clamp-2 text-xs leading-snug text-ink">{list[list.length - 1]?.text ?? "–"}</p>
                       </div>
                     ))}
                   </div>
@@ -165,8 +168,8 @@ function Announcements() {
       {announcements.length > 0 && (
         <ul className="mt-3 space-y-1.5">
           {announcements.slice(0, 4).map((a) => (
-            <li key={a.id} className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs ${a.active ? "bg-brand-soft text-ink" : "text-muted"}`}>
-              <span className="flex-1">{a.message}</span><span>{timeAgo(a.created_at)}</span>
+            <li key={a.id} className={`flex items-start gap-2 rounded-lg px-2.5 py-2 text-xs leading-snug ${a.active ? "bg-brand-soft text-ink" : "text-muted"}`}>
+              <span className="min-w-0 flex-1">{a.message}</span><span className="shrink-0 whitespace-nowrap">{timeAgo(a.created_at)}</span>
               {a.active && <button title="Hide" onClick={() => db.from("announcements").update({ active: false }).eq("id", a.id)}><EyeOff className="h-3.5 w-3.5" /></button>}
             </li>
           ))}

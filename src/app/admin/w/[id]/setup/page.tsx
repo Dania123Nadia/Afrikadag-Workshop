@@ -105,7 +105,7 @@ function Tables() {
   };
   return (
     <Card title="Tables → stakeholder groups" desc="Pick the stakeholder for each table from its dropdown. Participants choose their table by the name on its sign (for example Dutch Government 1) and get that stakeholder automatically. Several tables can share one stakeholder, and adding a stakeholder group adds a table for it.">
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2">
         {assignments.map((a) => {
           const g = groups.find((x) => x.id === a.group_id);
           const n = participants.filter((p) => p.table_number === a.table_number).length;
@@ -113,13 +113,13 @@ function Tables() {
             <div key={a.table_number} className="flex min-w-0 items-center gap-2 rounded-xl bg-surface p-2">
               <span className="flex h-9 w-10 shrink-0 items-center justify-center rounded-lg bg-white font-bold text-ink ring-1 ring-line" title={`Table ${a.table_number}`}>{a.table_number}</span>
               {g && <span className="hidden sm:contents"><GroupBadge name={g.name} color={g.color} icon={g.icon} size="sm" /></span>}
-              <div className="min-w-0 flex-1">
-                <select className="input !py-1.5 text-sm" value={a.group_id} onChange={(e) => setGroup(a.table_number, e.target.value)} aria-label={`Stakeholder for table ${a.table_number}`}>
+              <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                <select className="input !py-1.5 text-sm sm:!w-72 sm:shrink-0" value={a.group_id} onChange={(e) => setGroup(a.table_number, e.target.value)} aria-label={`Stakeholder for table ${a.table_number}`}>
                   {groups.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
                 </select>
-                <p className="mt-1 truncate px-1 text-xs text-muted" title="What participants pick when they join; put this name on the table sign">Sign: <span className="font-semibold text-ink-2">{labels.get(a.table_number)}</span><span className="sm:hidden"> · {n} joined</span></p>
+                <p className="min-w-0 truncate px-1 text-xs text-muted sm:px-0" title="What participants pick when they join; put this name on the table sign">Sign: <span className="font-semibold text-ink-2">{labels.get(a.table_number)}</span><span className="sm:hidden"> · {n} joined</span></p>
               </div>
-              <span className="hidden w-11 shrink-0 text-right text-xs leading-tight text-muted sm:block">{n} joined</span>
+              <span className="hidden shrink-0 whitespace-nowrap text-right text-xs text-muted sm:block">{n} joined</span>
               <button className="shrink-0 rounded-lg p-1.5 text-muted hover:text-stop" onClick={() => remove(a.table_number)} aria-label={`Remove table ${a.table_number}`}><Trash2 className="h-4 w-4" /></button>
             </div>
           );
@@ -215,8 +215,8 @@ function QuestionRow({ q }: { q: Question }) {
   useEffect(() => { setText(q.text); setLevel(q.level); }, [q]);
   const dirty = text !== q.text || level !== q.level;
   return (
-    <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-      <input className="input min-w-0 basis-full !py-2 text-sm sm:basis-auto" value={text} onChange={(e) => setText(e.target.value)} />
+    <div className="flex flex-wrap items-start gap-2 sm:flex-nowrap">
+      <textarea className="input min-w-0 basis-full resize-y !py-2 text-sm leading-snug sm:basis-auto" rows={2} value={text} onChange={(e) => setText(e.target.value)} aria-label="Question" />
       <select className="input min-w-0 flex-1 !py-2 text-sm sm:!w-32 sm:flex-none" value={level} onChange={(e) => setLevel(e.target.value as Question["level"])}>
         <option value="core">Starter</option><option value="deeper">Deeper</option><option value="challenge">Challenge</option>
       </select>
