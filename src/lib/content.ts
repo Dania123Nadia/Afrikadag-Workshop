@@ -49,14 +49,6 @@ export const TRAFFIC = [
   },
 ] as const;
 
-export const COTRAINING_STEPS = [
-  "Standardised skills assessment in Kenya",
-  "Cooperation with local NGOs and schools",
-  "Dutch sector input on assessments",
-  "Skills and language training",
-  "Training continues while working in NL",
-  "Possible route to long-term stay",
-];
 
 export const ITEM_META = {
   opportunity: { label: "Opportunities", one: "opportunity", prompt: "What could this model make better? For whom?", placeholder: "Add an opportunity…", color: "var(--color-go)", soft: "var(--color-go-soft)" },
