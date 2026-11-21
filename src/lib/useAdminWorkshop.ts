@@ -118,17 +118,37 @@ export function useAdminWorkshop(id: string) {
       else { setLive(false); wasDown = true; }
     });
 
-    const pres = db.channel(`presence-${id}`);
-    pres.on("presence", { event: "sync" }, () => {
-      const st = pres.presenceState<PresenceMeta>();
-      // one entry per participant (a person may have 2 tabs open)
-      setPresence(Object.values(st).map((metas) => metas.reduce((a, b) => (b.active_at > a.active_at ? b : a))));
-    }).subscribe();
-
     const onVis = () => { if (document.visibilityState === "visible") load(); };
     document.addEventListener("visibilitychange", onVis);
-    return () => { document.removeEventListener("visibilitychange", onVis); db.removeChannel(ch); db.removeChannel(pres); };
+    return () => { document.removeEventListener("visibilitychange", onVis); db.removeChannel(ch); };
   }, [db, id, load]);
+
+  // Presence: participants announce themselves on one channel per stakeholder
+  // group (see useParticipantWorkshop), so listen to each group's channel.
+  const groupKey = state.groups.map((g) => g.id).sort().join(",");
+  useEffect(() => {
+    if (!groupKey) { setPresence([]); return; }
+    const perGroup = new Map<string, PresenceMeta[]>();
+    const publish = () => {
+      // one entry per participant (a person may have 2 tabs open, or briefly sit in two groups after a move)
+      const best = new Map<string, PresenceMeta>();
+      for (const list of perGroup.values()) for (const m of list) {
+        const cur = best.get(m.pid);
+        if (!cur || (m.active_at ?? 0) > (cur.active_at ?? 0)) best.set(m.pid, m);
+      }
+      setPresence([...best.values()]);
+    };
+    const channels = groupKey.split(",").map((gid) => {
+      const pres = db.channel(`presence-${id}-${gid}`);
+      pres.on("presence", { event: "sync" }, () => {
+        const st = pres.presenceState<PresenceMeta>();
+        perGroup.set(gid, Object.values(st).map((metas) => metas.reduce((a, b) => ((b.active_at ?? 0) > (a.active_at ?? 0) ? b : a))));
+        publish();
+      }).subscribe();
+      return pres;
+    });
+    return () => { channels.forEach((c) => db.removeChannel(c)); };
+  }, [db, id, groupKey]);
 
   const control = useCallback(async (action: string, value?: number) => {
     const { data, error } = await db.rpc("admin_control", { p_workshop: id, p_action: action, p_value: value ?? null });

@@ -15,7 +15,7 @@ the session from a password-protected dashboard and see all input live.
 |---|---|---|
 | Join | `/` (or `/?code=CODE` from the QR) | Code → table number (button grid) → optional first name. No account. |
 | Participant | `/w/CODE` | Persistent progress tracker, timer, "current step / what next" card, stage content, group workspace, reference drawer ("Proposal & role"). |
-| Facilitator login | `/admin` | E-mail + password. Lists workshops, creates new ones from the Afrikadag template. |
+| Facilitator login | `/admin` | E-mail + password. Lists workshops, creates new ones with the stakeholders of an earlier workshop (e.g. AFRIKA24) or the Afrikadag template, and N tables per stakeholder. |
 | Live dashboard | `/admin/w/:id` | Stats, live group cards, full group workspace drawer (live draft / submitted versions / participants), stage + timer controls, announcements, QR, CSV/JSON export. |
 | Insights | `/admin/w/:id/insights` | Rule-based patterns (no AI): most mentioned opportunities/risks/recommendations, common concerns across groups, conflicting perspectives, distinctive recommendations, tagged items, takeaways side by side, all original responses. |
 | Presentation | `/admin/w/:id/present` | Full-screen slides: join screen, proposal, groups overview, one slide per group with 1-minute pitch timer, cross-group opportunities / concerns / recommendations, disagreements, insights. Keyboard ← → , `f` fullscreen. Facilitator stars which contributions are shown. |
@@ -40,7 +40,7 @@ Stakeholder profiles are clearly marked as **illustrative** and do not attribute
 - **Shared text fields** use optimistic versioning plus a 3-way merge (diff-match-patch): concurrent typing at a table is merged, not overwritten.
   Unsaved edits are also stored in `localStorage` and merged back after a refresh.
 - **Idea cards** (opportunities/risks/recommendations) are one row each, so parallel additions never conflict.
-- **Realtime:** Postgres changes (RLS-filtered) for state and content; Presence for "connected / working now" counts (no names);
+- **Realtime:** Postgres changes (RLS-filtered) for state and content; Presence for "connected / working now" counts (no names), on one channel per stakeholder group so presence updates only reach that group and the facilitator;
   Broadcast for "someone is typing". Clients re-fetch after reconnecting and whenever the tab becomes visible.
 - **Timer** is server-authoritative (`timer_ends_at`), clients correct for clock skew.
 - **Draft vs submitted:** live content is always visible to facilitators; `submit_group()` stores an immutable snapshot in `submissions`.
