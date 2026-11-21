@@ -148,8 +148,11 @@ export function useParticipantWorkshop(code: string) {
         }
       });
 
-    // Presence: lets facilitators see who is connected (no names are shared)
-    const pres = db.channel(`presence-${wid}`, { config: { presence: { key: pid } } });
+    // Presence: lets facilitators see who is connected (no names are shared).
+    // One presence channel per stakeholder group, not one for the whole room:
+    // every presence update is sent to everyone on the channel, so a shared
+    // channel would multiply realtime messages by the number of participants.
+    const pres = db.channel(`presence-${wid}-${gid}`, { config: { presence: { key: pid } } });
     presenceRef.current = pres;
     const countGroup = () => {
       const st = pres.presenceState<{ gid: string }>();

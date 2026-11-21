@@ -78,15 +78,23 @@ function Tables() {
   const { db, workshop: w, groups, assignments, participants, reload } = useWs();
   const toast = useToast();
   const [newTable, setNewTable] = useState("");
+  const [newGroup, setNewGroup] = useState("");
+  const nextTable = assignments.reduce((m, a) => Math.max(m, a.table_number), 0) + 1;
+  // Suggest the stakeholder that has the fewest tables, so new tables spread evenly
+  const fewest = groups.reduce<{ id: string; n: number } | null>((best, g) => {
+    const n = assignments.filter((a) => a.group_id === g.id).length;
+    return !best || n < best.n ? { id: g.id, n } : best;
+  }, null)?.id ?? "";
+  const targetGroup = groups.some((g) => g.id === newGroup) ? newGroup : fewest;
   const setGroup = async (table: number, group_id: string) => {
     const { error } = await db.from("group_assignments").update({ group_id }).eq("workshop_id", w!.id).eq("table_number", table);
     if (error) toast("Could not save", error.message, "warn"); else reload();
   };
   const add = async () => {
-    const n = Number(newTable);
-    if (!n || !groups[0]) return;
-    const { error } = await db.from("group_assignments").insert({ workshop_id: w!.id, table_number: n, group_id: groups[0].id });
-    if (error) toast("Could not add table", error.message.includes("duplicate") ? "That table exists already." : error.message, "warn"); else { setNewTable(""); reload(); }
+    const n = Number(newTable) || nextTable;
+    if (!targetGroup) return;
+    const { error } = await db.from("group_assignments").insert({ workshop_id: w!.id, table_number: n, group_id: targetGroup });
+    if (error) toast("Could not add table", error.message.includes("duplicate") ? "That table exists already." : error.message, "warn"); else { setNewTable(""); setNewGroup(""); reload(); }
   };
   const remove = async (n: number) => {
     if (participants.some((p) => p.table_number === n)) { toast("Table in use", "Participants have already joined this table.", "warn"); return; }
@@ -94,7 +102,7 @@ function Tables() {
     if (error) toast("Could not remove table", error.message, "warn"); else reload();
   };
   return (
-    <Card title="Tables → stakeholder groups" desc="Participants pick their table number and are allocated automatically. Several tables can share one stakeholder.">
+    <Card title="Tables → stakeholder groups" desc="Pick the stakeholder for each table from its dropdown. Participants pick their table number and get that stakeholder automatically. Several tables can share one stakeholder, and adding a stakeholder group adds a table for it.">
       <div className="grid gap-2 sm:grid-cols-2">
         {assignments.map((a) => {
           const g = groups.find((x) => x.id === a.group_id);
@@ -112,9 +120,12 @@ function Tables() {
           );
         })}
       </div>
-      <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); add(); }}>
-        <input className="input w-32" type="number" min={1} max={999} placeholder="Table no." value={newTable} onChange={(e) => setNewTable(e.target.value)} />
-        <button className="btn-secondary"><Plus className="h-4 w-4" />Add table</button>
+      <form className="mt-3 flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); add(); }}>
+        <input className="input !w-28" type="number" min={1} max={999} placeholder={`Table ${nextTable}`} aria-label="Table number" value={newTable} onChange={(e) => setNewTable(e.target.value)} />
+        <select className="input !w-auto min-w-0 flex-1" aria-label="Stakeholder for the new table" value={targetGroup} onChange={(e) => setNewGroup(e.target.value)}>
+          {groups.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+        </select>
+        <button className="btn-secondary" disabled={!targetGroup}><Plus className="h-4 w-4" />Add table</button>
       </form>
       <p className="mt-2 text-xs text-muted">Moving a table to another group moves its participants immediately (their screens update by themselves).</p>
     </Card>
@@ -122,7 +133,7 @@ function Tables() {
 }
 
 function GroupEditor({ group }: { group: StakeholderGroup }) {
-  const { db, questions, assignments, setState, reload } = useWs();
+  const { db, questions, assignments, participants, setState, reload } = useWs();
   const { busy, run } = useSaver();
   const toast = useToast();
   const [v, setV] = useState(group);
@@ -141,8 +152,9 @@ function GroupEditor({ group }: { group: StakeholderGroup }) {
   };
   const save = () => run(() => db.from("stakeholder_groups").update({ name: v.name, color: v.color, icon: v.icon, who: v.who, interests: v.interests, concerns: v.concerns, illustrative: v.illustrative }).eq("id", group.id));
   const del = async () => {
-    if (assignments.some((a) => a.group_id === group.id)) { toast("Group still has tables", "Move its tables to another group first.", "warn"); return; }
-    if (!confirm(`Delete "${group.name}" and all its content?`)) return;
+    if (participants.some((p) => p.group_id === group.id)) { toast("Group is in use", "Participants have joined this stakeholder. Move its tables to another group first.", "warn"); return; }
+    const tables = assignments.filter((a) => a.group_id === group.id).map((a) => a.table_number);
+    if (!confirm(`Delete "${group.name}" and all its content?${tables.length ? ` Its table${tables.length > 1 ? "s" : ""} (${tables.join(", ")}) will be removed too.` : ""}`)) return;
     const { error } = await db.from("stakeholder_groups").delete().eq("id", group.id);
     if (error) toast("Could not delete group", error.message, "warn"); else reload();
   };
@@ -210,15 +222,24 @@ function QuestionRow({ q }: { q: Question }) {
 }
 
 function AddGroup() {
-  const { db, workshop: w, groups, reload } = useWs();
+  const { db, workshop: w, groups, assignments, reload } = useWs();
   const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  // Every new stakeholder gets its own new table, so the number of tables grows with the stakeholders
   const add = async () => {
-    const { error } = await db.from("stakeholder_groups").insert({ workshop_id: w!.id, position: groups.length, name: "New stakeholder", who: "", interests: "", concerns: "" });
-    if (error) toast("Could not add group", error.message, "warn"); else reload();
+    setBusy(true);
+    const position = groups.reduce((m, g) => Math.max(m, g.position + 1), 0);
+    const { data, error } = await db.from("stakeholder_groups").insert({ workshop_id: w!.id, position, name: "New stakeholder", who: "", interests: "", concerns: "" }).select("id").single();
+    if (error) { setBusy(false); toast("Could not add group", error.message, "warn"); return; }
+    const table = assignments.reduce((m, a) => Math.max(m, a.table_number), 0) + 1;
+    const { error: te } = await db.from("group_assignments").insert({ workshop_id: w!.id, table_number: table, group_id: data.id });
+    setBusy(false);
+    if (te) toast("Group added, but no table", te.message, "warn"); else toast(`Stakeholder added with table ${table}`, undefined, "success");
+    reload();
   };
   return (
-    <button className="btn-secondary" onClick={add}>
-      <Plus className="h-4 w-4" />Add stakeholder group
+    <button className="btn-secondary" disabled={busy} onClick={add}>
+      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}Add stakeholder group
     </button>
   );
 }
