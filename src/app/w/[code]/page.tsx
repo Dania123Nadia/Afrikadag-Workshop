@@ -15,6 +15,7 @@ import { GuidingQuestions } from "@/components/participant/GuidingQuestions";
 import { contentOf } from "@/lib/content";
 import { useParticipantWorkshop } from "@/lib/useParticipantWorkshop";
 import type { ResponseItem } from "@/lib/types";
+import { tableLabel, type NamedTable } from "@/lib/tables";
 import { fmt, useRemaining } from "@/lib/time";
 
 export default function Page({ params }: { params: Promise<{ code: string }> }) {
@@ -61,6 +62,21 @@ function ParticipantApp({ code }: { code: string }) {
 
   const remaining = useRemaining(w ?? null);
 
+  // The name of my table as on the join screen ("Dutch Government 2"); refreshed when the facilitator moves the table
+  const [tableName, setTableName] = useState<string | null>(null);
+  const myTable = data?.me.table_number;
+  const myGroup = data?.me.group_id;
+  const groupNames = data?.groups.map((g) => g.name).join("|");
+  useEffect(() => {
+    if (myTable == null) return;
+    let off = false;
+    db.rpc("workshop_tables", { p_code: code }).then(({ data: ts }) => {
+      const t = (ts as NamedTable[] | null)?.find((x) => x.table_number === myTable);
+      if (!off) setTableName(t ? tableLabel(t) : null);
+    });
+    return () => { off = true; };
+  }, [db, code, myTable, myGroup, groupNames]);
+
   if (status === "loading" || status === "not-joined" || !data || !w) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-surface p-6 text-center">
@@ -88,7 +104,7 @@ function ParticipantApp({ code }: { code: string }) {
           <BrandMark className="h-8 w-8 shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-display text-sm font-bold text-ink">{w.title}</p>
-            <p className="truncate text-xs text-muted">Table {me.table_number}{roleVisible && group ? ` · ${group.name}` : ""}</p>
+            <p className="truncate text-xs text-muted">{tableName ?? `Table ${me.table_number}${roleVisible && group ? ` · ${group.name}` : ""}`}</p>
           </div>
           {started && w.status !== "ended" && <TimerBadge workshop={w} />}
         </div>
@@ -122,7 +138,7 @@ function ParticipantApp({ code }: { code: string }) {
           <section className="card animate-rise p-6">
             <p className="eyebrow">You're in</p>
             <h1 className="mt-1 text-2xl font-extrabold">Welcome{me.display_name ? `, ${me.display_name}` : ""}!</h1>
-            <p className="mt-2">You're joined at <strong>table {me.table_number}</strong>. The facilitator will start the workshop shortly. This screen updates by itself. You don't need to refresh.</p>
+            <p className="mt-2">You're joined at <strong>{tableName ?? `table ${me.table_number}`}</strong>. The facilitator will start the workshop shortly. This screen updates by itself. You don't need to refresh.</p>
             <div className="mt-5 flex items-center gap-2 text-sm text-muted"><Loader2 className="h-4 w-4 animate-spin" /> Waiting for the facilitator…</div>
           </section>
         ) : (

@@ -41,6 +41,8 @@
     color: var(--color-ink-2);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    /* Long words, links and names wrap inside their box instead of sticking out */
+    overflow-wrap: anywhere;
   }
   h1, h2, h3, h4 { color: var(--color-ink); font-family: var(--font-display); letter-spacing: -0.01em; }
 }

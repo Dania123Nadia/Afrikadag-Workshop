@@ -31,15 +31,15 @@ function Shell({ id, children }: { id: string; children: React.ReactNode }) {
             <p className="truncate font-display text-[15px] font-bold text-ink">{workshop?.title ?? (loading ? "Loading…" : error)}</p>
             <p className="text-xs text-muted">Code <span className="font-mono font-bold text-ink">{workshop?.access_code}</span></p>
           </div>
-          <span className={`chip ${live ? "bg-go-soft text-go" : "bg-caution-soft text-caution"}`}><Radio className={`h-3.5 w-3.5 ${live ? "animate-pulse-soft" : ""}`} />{live ? "Real-time connected" : "Reconnecting…"}</span>
+          <span className={`chip shrink-0 ${live ? "bg-go-soft text-go" : "bg-caution-soft text-caution"}`}><Radio className={`h-3.5 w-3.5 ${live ? "animate-pulse-soft" : ""}`} /><span className="hidden sm:inline">{live ? "Real-time connected" : "Reconnecting…"}</span><span className="sm:hidden">{live ? "Live" : "Offline"}</span></span>
         </div>
         <nav className="no-scrollbar mx-auto flex max-w-[1400px] gap-1 overflow-x-auto px-4 lg:px-6">
           {tabs.map((t) => {
             const active = path === t.href;
             const I = t.icon;
             return (
-              <Link key={t.href} href={t.href} className={`flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-semibold transition ${active ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink"}`}>
-                <I className="h-4 w-4" />{t.label}
+              <Link key={t.href} href={t.href} className={`flex shrink-0 items-center gap-2 border-b-2 px-2.5 py-2.5 sm:px-3 text-sm font-semibold transition ${active ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink"}`}>
+                <I className="hidden h-4 w-4 sm:block" />{t.label}
               </Link>
             );
           })}

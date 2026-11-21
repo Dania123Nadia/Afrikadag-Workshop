@@ -10,6 +10,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { useToast } from "@/components/ui/Toast";
 import { ITEM_META } from "@/lib/content";
 import { exportCsv, exportJson } from "@/lib/export";
+import { labelMap } from "@/lib/tables";
 import { fmt, timeAgo, useRemaining } from "@/lib/time";
 import type { ItemKind, StakeholderGroup } from "@/lib/types";
 
@@ -98,10 +99,10 @@ export default function Dashboard() {
                     <p className="eyebrow">Key insight {s.prog?.status === "submitted" ? "" : "(draft)"}</p>
                     <p className={`mt-1 line-clamp-3 text-sm ${s.takeaway ? "text-ink" : "italic text-muted"}`}>{s.takeaway || "Not written yet"}</p>
                   </div>
-                  <div className="mt-3 grid grid-cols-3 gap-2">
+                  <div className="mt-3 grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
                     {([["opportunity", s.opp], ["risk", s.risk], ["recommendation", s.rec]] as const).map(([k, list]) => (
                       <div key={k} className="min-w-0 rounded-lg px-2 py-1.5" style={{ background: ITEM_META[k].soft }}>
-                        <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: ITEM_META[k].color }}>{ITEM_META[k].label.split(" ")[0]} · {list.length}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wide [overflow-wrap:normal]" style={{ color: ITEM_META[k].color }}>{ITEM_META[k].label.split(" ")[0]} · {list.length}</p>
                         <p className="mt-0.5 line-clamp-2 text-xs text-ink">{list[list.length - 1]?.text ?? "–"}</p>
                       </div>
                     ))}
@@ -184,6 +185,7 @@ function GroupDrawer({ groupId, onClose }: { groupId: string | null; onClose: ()
   const subs = submissions.filter((s) => s.group_id === g.id);
   const f = (k: string) => fields.find((x) => x.group_id === g.id && x.field === k);
   const online = new Set(byGroup(g.id).map((p) => p.pid));
+  const labels = labelMap(assignments, groups);
   const kinds: ItemKind[] = ["opportunity", "risk", "recommendation"];
 
   return (
@@ -245,8 +247,8 @@ function GroupDrawer({ groupId, onClose }: { groupId: string | null; onClose: ()
           {participants.filter((p) => p.group_id === g.id).map((p) => (
             <li key={p.id} className="flex items-center gap-3 rounded-xl bg-white px-3 py-2 text-sm ring-1 ring-line">
               <span className={`h-2 w-2 rounded-full ${online.has(p.id) ? "bg-go" : "bg-slate-300"}`} />
-              <span className="flex-1 font-medium text-ink">{p.display_name || <span className="text-muted">Anonymous</span>}</span>
-              <span className="text-xs text-muted">Table {p.table_number}</span>
+              <span className="min-w-0 flex-1 truncate font-medium text-ink">{p.display_name || <span className="text-muted">Anonymous</span>}</span>
+              <span className="shrink-0 text-xs text-muted">{labels.get(p.table_number) ?? `Table ${p.table_number}`}</span>
               <span className="text-xs text-muted">{online.has(p.id) ? "online" : `seen ${timeAgo(p.last_seen_at)}`}</span>
             </li>
           ))}

@@ -82,14 +82,14 @@ function Present() {
 
       <main key={slide.key} className="relative flex flex-1 animate-rise flex-col px-8 pb-28 pt-8 lg:px-16">
         {slide.key === "join" && (
-          <div className="m-auto flex flex-col items-center gap-10 text-center lg:flex-row lg:text-left">
-            <div className="rounded-3xl bg-white p-6 shadow-2xl"><QRCodeSVG value={joinUrl} size={300} /></div>
+          <div className="m-auto flex w-full flex-col items-center gap-10 text-center lg:w-auto lg:flex-row lg:text-left">
+            <div className="w-full max-w-[348px] rounded-3xl bg-white p-6 shadow-2xl"><QRCodeSVG value={joinUrl} size={300} className="h-auto w-full" /></div>
             <div>
               <p className="text-xl font-semibold text-white/70">Scan the code or go to</p>
               <p className="mt-1 break-all font-display text-3xl font-bold text-white">{joinUrl.replace(/^https?:\/\//, "").replace(/\?code=.*/, "")}</p>
               <p className="mt-8 text-xl font-semibold text-white/70">Workshop code</p>
-              <p className="font-mono text-7xl font-extrabold tracking-[.2em] text-accent">{w.access_code}</p>
-              <p className="mt-6 text-lg text-white/70">Then choose your table number. No account needed.</p>
+              <p className="font-mono text-5xl font-extrabold tracking-[.2em] text-accent sm:text-7xl">{w.access_code}</p>
+              <p className="mt-6 text-lg text-white/70">Then pick the name on your table sign. No account needed.</p>
             </div>
           </div>
         )}
@@ -159,7 +159,7 @@ function Present() {
       </main>
 
       {/* Controls */}
-      <footer className={`fixed inset-x-0 bottom-0 z-20 flex items-center gap-2 bg-gradient-to-t from-ink via-ink/90 to-transparent px-6 pb-5 pt-10 transition-opacity ${chrome ? "opacity-100" : "opacity-0 hover:opacity-100"}`}>
+      <footer className={`no-scrollbar fixed inset-x-0 bottom-0 z-20 flex items-center gap-2 overflow-x-auto bg-gradient-to-t from-ink via-ink/90 to-transparent px-6 pb-5 pt-10 transition-opacity ${chrome ? "opacity-100" : "opacity-0 hover:opacity-100"}`}>
         <Link href={`/admin/w/${w.id}`} className="btn !bg-white/10 !text-white hover:!bg-white/20"><X className="h-4 w-4" />Exit</Link>
         <button className="btn !bg-white/10 !text-white hover:!bg-white/20" onClick={() => go(-1)} aria-label="Previous slide"><ChevronLeft className="h-5 w-5" /></button>
         <select className="rounded-xl bg-white/10 px-3 py-2.5 text-sm font-semibold text-white" value={idx} onChange={(e) => setIdx(Number(e.target.value))}>

@@ -13,7 +13,7 @@ the session from a password-protected dashboard and see all input live.
 
 | Area | Route | What it does |
 |---|---|---|
-| Join | `/` (or `/?code=CODE` from the QR) | Code → table number (button grid) → optional first name. No account. |
+| Join | `/` (or `/?code=CODE` from the QR) | Code → table picked from a dropdown by its sign name ("Dutch Government 1", "Dutch Government 2", …) → optional first name. No account. Falls back to a number grid if the `workshop_tables` migration has not been run. |
 | Participant | `/w/CODE` | Persistent progress tracker, timer, "current step / what next" card, stage content, group workspace, reference drawer ("Proposal & role"). |
 | Facilitator login | `/admin` | E-mail + password. Lists workshops, creates new ones with the stakeholders of an earlier workshop (e.g. AFRIKA24) or the Afrikadag template, and N tables per stakeholder. |
 | Live dashboard | `/admin/w/:id` | Stats, live group cards, full group workspace drawer (live draft / submitted versions / participants), stage + timer controls, announcements, QR, CSV/JSON export. |

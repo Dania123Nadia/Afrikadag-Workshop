@@ -6,6 +6,7 @@ import { useWs } from "@/components/admin/WorkshopContext";
 import { GROUP_ICONS, GroupBadge } from "@/components/ui/GroupIcon";
 import { useToast } from "@/components/ui/Toast";
 import { DEFAULT_CONTENT } from "@/lib/content";
+import { labelMap } from "@/lib/tables";
 import type { Question, Stage, StakeholderGroup, WorkshopContent } from "@/lib/types";
 
 function useSaver() {
@@ -79,6 +80,7 @@ function Tables() {
   const toast = useToast();
   const [newTable, setNewTable] = useState("");
   const [newGroup, setNewGroup] = useState("");
+  const labels = labelMap(assignments, groups);
   const nextTable = assignments.reduce((m, a) => Math.max(m, a.table_number), 0) + 1;
   // Suggest the stakeholder that has the fewest tables, so new tables spread evenly
   const fewest = groups.reduce<{ id: string; n: number } | null>((best, g) => {
@@ -102,27 +104,30 @@ function Tables() {
     if (error) toast("Could not remove table", error.message, "warn"); else reload();
   };
   return (
-    <Card title="Tables → stakeholder groups" desc="Pick the stakeholder for each table from its dropdown. Participants pick their table number and get that stakeholder automatically. Several tables can share one stakeholder, and adding a stakeholder group adds a table for it.">
-      <div className="grid gap-2 sm:grid-cols-2">
+    <Card title="Tables → stakeholder groups" desc="Pick the stakeholder for each table from its dropdown. Participants choose their table by the name on its sign (for example Dutch Government 1) and get that stakeholder automatically. Several tables can share one stakeholder, and adding a stakeholder group adds a table for it.">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
         {assignments.map((a) => {
           const g = groups.find((x) => x.id === a.group_id);
           const n = participants.filter((p) => p.table_number === a.table_number).length;
           return (
-            <div key={a.table_number} className="flex items-center gap-2 rounded-xl bg-surface p-2">
-              <span className="flex h-9 w-12 items-center justify-center rounded-lg bg-white font-bold text-ink ring-1 ring-line">{a.table_number}</span>
-              {g && <GroupBadge name={g.name} color={g.color} icon={g.icon} size="sm" />}
-              <select className="input !py-1.5 text-sm" value={a.group_id} onChange={(e) => setGroup(a.table_number, e.target.value)}>
-                {groups.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-              </select>
-              <span className="w-14 shrink-0 text-right text-xs text-muted">{n} joined</span>
-              <button className="rounded-lg p-1.5 text-muted hover:text-stop" onClick={() => remove(a.table_number)} aria-label={`Remove table ${a.table_number}`}><Trash2 className="h-4 w-4" /></button>
+            <div key={a.table_number} className="flex min-w-0 items-center gap-2 rounded-xl bg-surface p-2">
+              <span className="flex h-9 w-10 shrink-0 items-center justify-center rounded-lg bg-white font-bold text-ink ring-1 ring-line" title={`Table ${a.table_number}`}>{a.table_number}</span>
+              {g && <span className="hidden sm:contents"><GroupBadge name={g.name} color={g.color} icon={g.icon} size="sm" /></span>}
+              <div className="min-w-0 flex-1">
+                <select className="input !py-1.5 text-sm" value={a.group_id} onChange={(e) => setGroup(a.table_number, e.target.value)} aria-label={`Stakeholder for table ${a.table_number}`}>
+                  {groups.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                </select>
+                <p className="mt-1 truncate px-1 text-xs text-muted" title="What participants pick when they join; put this name on the table sign">Sign: <span className="font-semibold text-ink-2">{labels.get(a.table_number)}</span><span className="sm:hidden"> · {n} joined</span></p>
+              </div>
+              <span className="hidden w-11 shrink-0 text-right text-xs leading-tight text-muted sm:block">{n} joined</span>
+              <button className="shrink-0 rounded-lg p-1.5 text-muted hover:text-stop" onClick={() => remove(a.table_number)} aria-label={`Remove table ${a.table_number}`}><Trash2 className="h-4 w-4" /></button>
             </div>
           );
         })}
       </div>
       <form className="mt-3 flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); add(); }}>
         <input className="input !w-28" type="number" min={1} max={999} placeholder={`Table ${nextTable}`} aria-label="Table number" value={newTable} onChange={(e) => setNewTable(e.target.value)} />
-        <select className="input !w-auto min-w-0 flex-1" aria-label="Stakeholder for the new table" value={targetGroup} onChange={(e) => setNewGroup(e.target.value)}>
+        <select className="input !w-auto min-w-[10rem] flex-1" aria-label="Stakeholder for the new table" value={targetGroup} onChange={(e) => setNewGroup(e.target.value)}>
           {groups.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
         </select>
         <button className="btn-secondary" disabled={!targetGroup}><Plus className="h-4 w-4" />Add table</button>
@@ -162,8 +167,8 @@ function GroupEditor({ group }: { group: StakeholderGroup }) {
     <details className="group rounded-2xl ring-1 ring-line open:bg-surface/50">
       <summary className="flex cursor-pointer list-none items-center gap-3 p-3">
         <GroupBadge name={v.name} color={v.color} icon={v.icon} />
-        <span className="flex-1 font-bold text-ink">{group.name}</span>
-        <span className="text-xs text-muted">{qs.length} questions</span>
+        <span className="min-w-0 flex-1 font-bold text-ink">{group.name}</span>
+        <span className="shrink-0 text-xs text-muted">{qs.length} questions</span>
       </summary>
       <div className="space-y-3 px-3 pb-4">
         <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
@@ -210,9 +215,9 @@ function QuestionRow({ q }: { q: Question }) {
   useEffect(() => { setText(q.text); setLevel(q.level); }, [q]);
   const dirty = text !== q.text || level !== q.level;
   return (
-    <div className="flex gap-2">
-      <input className="input !py-2 text-sm" value={text} onChange={(e) => setText(e.target.value)} />
-      <select className="input !w-32 !py-2 text-sm" value={level} onChange={(e) => setLevel(e.target.value as Question["level"])}>
+    <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+      <input className="input min-w-0 basis-full !py-2 text-sm sm:basis-auto" value={text} onChange={(e) => setText(e.target.value)} />
+      <select className="input min-w-0 flex-1 !py-2 text-sm sm:!w-32 sm:flex-none" value={level} onChange={(e) => setLevel(e.target.value as Question["level"])}>
         <option value="core">Starter</option><option value="deeper">Deeper</option><option value="challenge">Challenge</option>
       </select>
       <button className="btn-primary !px-3" disabled={!dirty} onClick={saveQ} aria-label="Save question"><Save className="h-4 w-4" /></button>
