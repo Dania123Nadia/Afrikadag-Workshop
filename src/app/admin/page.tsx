@@ -57,14 +57,14 @@ export default function AdminHome() {
   return (
     <div className="min-h-dvh">
       <header className="border-b border-line bg-white">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-4">
+        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4 sm:px-5">
           <BrandMark className="h-9 w-9" />
-          <div className="flex-1"><p className="eyebrow">Facilitator</p><h1 className="text-lg font-extrabold">Afrikadag workshops</h1></div>
+          <div className="min-w-0 flex-1"><p className="eyebrow">Facilitator</p><h1 className="text-lg font-extrabold">Afrikadag workshops</h1></div>
           <span className="hidden text-sm text-muted sm:inline">{session?.user.email}</span>
-          <button className="btn-ghost" onClick={signOut}><LogOut className="h-4 w-4" /> Sign out</button>
+          <button className="btn-ghost shrink-0" onClick={signOut}><LogOut className="h-4 w-4" /> Sign out</button>
         </div>
       </header>
-      <main className="mx-auto grid max-w-5xl gap-6 px-5 py-8 lg:grid-cols-[1fr_360px]">
+      <main className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 py-6 sm:px-5 sm:py-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section>
           <h2 className="mb-3 text-base font-bold">Your workshops</h2>
           {!list ? <Loader2 className="h-5 w-5 animate-spin text-brand" /> : list.length === 0 ? (
@@ -78,7 +78,7 @@ export default function AdminHome() {
                       <p className="truncate font-bold text-ink">{w.title}</p>
                       <p className="text-sm text-muted">Code <span className="font-mono font-semibold text-ink">{w.access_code}</span> · created {new Date(w.created_at).toLocaleDateString()}</p>
                     </div>
-                    <span className={`chip ${w.status === "live" ? "bg-go-soft text-go" : w.status === "paused" ? "bg-caution-soft text-caution" : "bg-surface text-muted"}`}>{STATUS[w.status]}</span>
+                    <span className={`chip shrink-0 ${w.status === "live" ? "bg-go-soft text-go" : w.status === "paused" ? "bg-caution-soft text-caution" : "bg-surface text-muted"}`}>{STATUS[w.status]}</span>
                     <ArrowRight className="h-4 w-4 text-muted" />
                   </Link>
                 </li>
@@ -93,7 +93,7 @@ export default function AdminHome() {
           <div>
             <label className="label" htmlFor="stakeholders">Stakeholders</label>
             <select id="stakeholders" className="input" value={source ?? ""} onChange={(e) => setSource(e.target.value)}>
-              {sources.map((w) => <option key={w.id} value={w.id}>Same as {w.access_code}: {w.title} ({groupCounts[w.id]} stakeholders)</option>)}
+              {sources.map((w) => <option key={w.id} value={w.id}>Same as {w.access_code} ({groupCounts[w.id]} stakeholders)</option>)}
               <option value="">Afrikadag template ({TEMPLATE_GROUPS} stakeholders)</option>
             </select>
           </div>

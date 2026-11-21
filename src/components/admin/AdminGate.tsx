@@ -54,7 +54,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
               {checkError ? (
                 <p className="rounded-xl bg-stop-soft px-3 py-2.5 text-sm text-stop">Signed in as {session?.user.email}, but the facilitator check failed: <span className="font-mono">{checkError}</span>. The database setup may be incomplete.</p>
               ) : (
-                <p className="rounded-xl bg-caution-soft px-3 py-2.5 text-sm text-caution">Signed in as {session?.user.email}, but this account is not a facilitator yet. Add it with <span className="font-mono">select public.grant_admin('{session?.user.email}');</span> in the Supabase SQL editor, then sign out and in again.</p>
+                <p className="rounded-xl bg-caution-soft px-3 py-2.5 text-sm text-caution">Signed in as {session?.user.email}, but this account is not a facilitator yet. Add it with <span className="font-mono [overflow-wrap:anywhere]">select public.grant_admin('{session?.user.email}');</span> in the Supabase SQL editor, then sign out and in again.</p>
               )}
               <button className="btn-secondary w-full" onClick={signOut}><LogOut className="h-4 w-4" /> Sign out</button>
             </div>
